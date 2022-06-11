@@ -11,17 +11,50 @@
 #include "driver/rtc_io.h"
 #include <EEPROM.h>
 
-#define EEPROM_SIZE 1
+#define EEPROM_SIZE 2
 #define CAMERA_MODEL_AI_THINKER // Has PSRAM
-#include "camera_pins.h"
+#define PWDN_GPIO_NUM     32
+#define RESET_GPIO_NUM    -1
+#define XCLK_GPIO_NUM      0
+#define SIOD_GPIO_NUM     26
+#define SIOC_GPIO_NUM     27
+
+#define Y9_GPIO_NUM       35
+#define Y8_GPIO_NUM       34
+#define Y7_GPIO_NUM       39
+#define Y6_GPIO_NUM       36
+#define Y5_GPIO_NUM       21
+#define Y4_GPIO_NUM       19
+#define Y3_GPIO_NUM       18
+#define Y2_GPIO_NUM        5
+#define VSYNC_GPIO_NUM    25
+#define HREF_GPIO_NUM     23
+#define PCLK_GPIO_NUM     22
+//#include "camera_pins.h"
 
 int pictureNumber = 0;
 camera_fb_t * fb = NULL;
+bool pressed = false;
+
+bool triggered() {
+  if (digitalRead(16)==0) {
+    if (pressed) return false;
+    return pressed = true;
+  } else {
+    return pressed = false;
+  }
+}
+
+bool testImage() {
+  digitalWrite(4, HIGH);
+  delay(500);
+  digitalWrite(4, LOW);
+}
 
 void saveImage() {
   fb = esp_camera_fb_get();  
   if(!fb) return;
-  // initialize EEPROM with predefined sizeSDMMC_INTMASK_SBE
+  // initialize EEPROM with predefined size SDMMC_INTMASK_SBE
   EEPROM.begin(EEPROM_SIZE);
   pictureNumber = EEPROM.read(0) + 1;
   // path where new picture will be saved in SD Card
@@ -84,8 +117,10 @@ void setup() {
   // turn off flash light
   pinMode(4, OUTPUT);
   digitalWrite(4, LOW);
-  rtc_gpio_hold_en(GPIO_NUM_4);
+  // rtc_gpio_hold_en(GPIO_NUM_4);
 
+  // trigger setup
+  pinMode(16, INPUT_PULLUP);
 
   // camera init
   esp_err_t err = esp_camera_init(&config);
@@ -100,6 +135,8 @@ void setup() {
 }
 
 void loop() {
-  saveImage();
-  delay(1000);
+  if (triggered()) {
+//    testImage();
+    saveImage();
+  }
 }
