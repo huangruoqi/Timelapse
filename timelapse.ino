@@ -43,6 +43,7 @@ bool triggered() {
   } else {
     return pressed = false;
   }
+  delay(1000);
 }
 
 bool testImage() {
