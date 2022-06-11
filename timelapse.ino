@@ -37,13 +37,12 @@ camera_fb_t * fb = NULL;
 bool pressed = false;
 
 bool triggered() {
-  if (digitalRead(16)==0) {
+  if (digitalRead(1)==0) {
     if (pressed) return false;
     return pressed = true;
   } else {
     return pressed = false;
   }
-  delay(1000);
 }
 
 bool testImage() {
@@ -70,7 +69,7 @@ void saveImage() {
     EEPROM.commit();
   }
   file.close();
-  esp_camera_fb_return(fb); 
+  esp_camera_fb_return(fb);
 }
 
 void setup() {
@@ -121,7 +120,7 @@ void setup() {
   // rtc_gpio_hold_en(GPIO_NUM_4);
 
   // trigger setup
-  pinMode(16, INPUT_PULLUP);
+  pinMode(1, INPUT_PULLUP);
 
   // camera init
   esp_err_t err = esp_camera_init(&config);
@@ -131,13 +130,14 @@ void setup() {
    if (s->id.PID == OV3660_PID) {
      s->set_vflip(s, 1); // flip it back
      s->set_brightness(s, 1); // up the brightness just a bit
+     
      s->set_saturation(s, -2); // lower the saturation
    }
 }
 
 void loop() {
   if (triggered()) {
-//    testImage();
     saveImage();
+    delay(1000);
   }
 }
